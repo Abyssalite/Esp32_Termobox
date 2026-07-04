@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
@@ -22,5 +22,10 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Websocket.Client" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Avalonia_Navigation/Avalonia_Navigation/Avalonia_Navigation.csproj" />
+    <ProjectReference Include="../../../Avalonia_EventHub/Avalonia_EventHub/Avalonia_EventHub.csproj" />
   </ItemGroup>
 </Project>

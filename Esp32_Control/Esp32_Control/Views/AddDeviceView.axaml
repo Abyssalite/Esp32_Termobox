@@ -4,12 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Esp32_Control.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Esp32_Control.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:Class="Esp32_Control.Views.AddDeviceView"
+             x:DataType="vm:AddDeviceViewModel">
 
-	<Design.DataContext>
-		<vm:MainViewModel />
-	</Design.DataContext>
-
-	<ContentControl Content="{Binding ViewHost.MainView}" />
+	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Padding="100" Margin="100 0">
+		<StackPanel HorizontalAlignment="Stretch" >
+			<TextBox Watermark="Task name" Text="{Binding Name}" Margin="8" />
+			<TextBox Watermark="Description" Text="{Binding Address}" Margin="8" />
+		</StackPanel>
+	</Border>
 </UserControl>

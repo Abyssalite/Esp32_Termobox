@@ -7,6 +7,8 @@ using Avalonia.Markup.Xaml;
 using Esp32_Control.ViewModels;
 using Esp32_Control.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Avalonia_Navigation;
+using Avalonia_EventHub;
 
 namespace Esp32_Control;
 
@@ -26,8 +28,10 @@ public partial class App : Application
         BindingPlugins.DataValidators.RemoveAt(0);
 
         // Register all the services needed for the application to run
-        var collection = new ServiceCollection();
+        IServiceCollection collection = new ServiceCollection();
         collection.AddCommonServices();
+        collection.AddAvaloniaNavigation();
+        collection.AddAvaloniaEventHub();
 
         // Creates a ServiceProvider containing services from the provided IServiceCollection
         Services = collection.BuildServiceProvider();

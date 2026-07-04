@@ -1,23 +1,27 @@
-
-using System;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.Input;
+using System.Threading.Tasks;
+using Avalonia_Navigation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Esp32_Control.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {    
-    public ICommand AddDeviceCommand { get; }
+    private readonly IViewHost _viewhost;
+    public IViewHost ViewHost => _viewhost;
 
     public MainViewModel(
-        Store store
-    ):base(store)
+        Store store,
+        IViewHost viewHost,
+        INavigatorService navigator
+    ):base(store, navigator)
     {
-        AddDeviceCommand = new RelayCommand(addDevice);
+        _viewhost = viewHost;
+        _ = InitializeAsync();
     }
 
-    void addDevice()
+    public async Task InitializeAsync()
     {
-        Console.WriteLine("test");
+        var vm = App.Services?.GetRequiredService<SelectViewModel>();
+        await _navigator.NavigateMain(vm); 
     }
 }
