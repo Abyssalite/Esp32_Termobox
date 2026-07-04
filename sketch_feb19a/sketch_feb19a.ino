@@ -6,7 +6,7 @@
 #define R   10000
 #define B   3970  
 #define VCC 3.3    //Supply  voltage
-#define THERMISTOR A1
+#define THERMISTOR A0
 
 #define UPDATE_PERIOD 1000
 #define FUNCTION_PERIOD 10
@@ -14,16 +14,14 @@
 #define BUTTON2 10
 #define BUTTON3 2
 #define BUTTON4 21
-#define FAN1 0
+#define FAN1 4
 #define FAN2 3
-#define TEC  8
-#define FAN_ENABLE 4
-#define TEC_ENABLE 7
-#define FAN_FREQ 25000
-#define TEC_FREQ 1000
-#define PWM_RESOLUTION 8
-#define DEBOUND_BUTTON 120 // 100ms debounce
-#define DEBOUND_INTERRUPT 100 // 10ms debounce
+#define TEC  7
+#define FAN_FREQ 8000
+#define TEC_FREQ 10000
+#define PWM_RESOLUTION 10
+#define DEBOUND_BUTTON 120 // 120ms debounce
+#define DEBOUND_INTERRUPT 100 // 100ms debounce
 
 // OLED constructor
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 6, 5);
@@ -32,10 +30,10 @@ DHT22 dht22(20);
 unsigned long updateTimer = 0;
 unsigned long functionTimer = 0;
 
-uint8_t fan1Speed = 10;
-uint8_t fan2Speed = 10;
-uint8_t tecPWM = 0;
-float setTemp = 0.0f;
+uint8_t fan1Speed = 20;
+uint8_t fan2Speed = 20;
+uint8_t tecPower = 10;
+float setTemp = 1.0f;
 float currentTemp = 0.0f;
 float currentHumidity = 0.0f;
 float thermTemp = 0.0f;
@@ -81,6 +79,7 @@ void readThermisor() {
   int raw = analogRead(THERMISTOR);
 
   if (raw <= 0 || raw >= 4095) {
+    thermTemp = 99;
     return;
   }
 
@@ -88,21 +87,29 @@ void readThermisor() {
   float thermResistance = R * (thermVoltage / (VCC - thermVoltage));
 
   thermTemp = 1.0 / ((1.0 / T0) + (log(thermResistance / TR0) / B));
-
   thermTemp = thermTemp - 273.15;
 }
+
+void tecPowerController(){
+  float dt = currentTemp - setTemp; 
+   if (dt < 0) return;
+
+  tecPower = 10 + 80.0 / (1 + exp(-0.6 * (dt - 9))); 
+  tecPower = constrain(tecPower, 10, 90);
+}
+
 
 void showTemp(){
   u8g2.clearBuffer();
 
   u8g2.setFont(u8g2_font_5x8_tf);
   u8g2.setCursor(4, 8);
-  u8g2.print("Temp / Humidity");
+  u8g2.print("Co, Ho / Hum");
 
   u8g2.setFont(u8g2_font_7x14_tf);
   u8g2.setCursor(6, 22);
   u8g2.print(currentTemp, 1);
-  u8g2.print(" ");
+  u8g2.print(",");
   u8g2.print(thermTemp, 1);
 
   u8g2.setCursor(6, 38);
@@ -122,10 +129,10 @@ void showTempInfo(std::string text, uint8_t num, float data, float data2 = 0) {
 
     u8g2.setFont(u8g2_font_7x14_tf);
     u8g2.setCursor(6, 22);
-    u8g2.print(data);
+    u8g2.print(data, 1);
     if (data2) {
       u8g2.print('/');
-      u8g2.print(data2);
+      u8g2.print(data2, 1);
     }
     u8g2.sendBuffer();
 }
@@ -170,6 +177,10 @@ void IRAM_ATTR button1ISR() {
         break;
       }
       case 3: {
+        mode[modeIndex] = 4;
+        break;
+      }
+      case 4: {
         mode[modeIndex] = 0;
         break;
       }
@@ -188,7 +199,7 @@ void setFan(int8_t value, uint8_t fan, uint8_t* fanSpeed) {
     *fanSpeed += value;
     uint8_t tmp = constrain(*fanSpeed, 1, 100);
     *fanSpeed = tmp;
-    ledcWrite(fan, map(tmp, 0, 100, 0, 255));
+    ledcWrite(fan, map(tmp, 0, 100, 0, 1024));
 }
 
 void setup(void) {
@@ -199,14 +210,9 @@ void setup(void) {
   pinMode(BUTTON3, INPUT_PULLUP);
   pinMode(BUTTON4, INPUT_PULLUP);
 
-  pinMode(FAN_ENABLE, OUTPUT);
-  pinMode(TEC_ENABLE, OUTPUT);
   pinMode(FAN1, OUTPUT);
   pinMode(FAN2, OUTPUT);
   pinMode(FAN2, OUTPUT);
-
-  digitalWrite(FAN_ENABLE, HIGH);
-  digitalWrite(TEC_ENABLE, HIGH);
 
   attachInterrupt(digitalPinToInterrupt(BUTTON1), button1ISR, FALLING);
   attachInterrupt(digitalPinToInterrupt(BUTTON2), button2ISR, FALLING);
@@ -230,11 +236,6 @@ void loop(void) {
 
   if (now - functionTimer >= FUNCTION_PERIOD) {
     functionTimer = now;
-    uint8_t err = dht22.getLastError();
-    if (err != 0) {
-      showError(err);
-      return;
-    }
     
     switch (mode[modeIndex]) {
       case 0: {
@@ -242,47 +243,19 @@ void loop(void) {
           showTemp();
         }
         if(modeIndex == 1) {
+          u8g2.clearBuffer();
+          u8g2.setFont(u8g2_font_6x10_tf);
+          u8g2.setCursor(4, 16);
+          u8g2.print("Setting");
+          u8g2.sendBuffer();
         }
 
         break;
       }
+
       case 1: {
         if(modeIndex == 0) {
-          showFanInfo("Current Fan", 1, fan1Speed);
-        }
-
-        if(modeIndex == 1) {
-          if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setFan(1, FAN1, &fan1Speed);
-          } 
-          if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setFan(-1, FAN1, &fan1Speed);
-          } 
-          showFanInfo("Set Fan", 1, fan1Speed);
-        }
-
-        break;
-      }    
-      case 2: {
-        if(modeIndex == 0) {
-          showFanInfo("Current Fan", 2, fan2Speed);
-        }
-
-        if(modeIndex == 1) {
-          if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setFan(1, FAN2, &fan2Speed);
-          } 
-          if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setFan(-1, FAN2, &fan2Speed);
-          } 
-          showFanInfo("Set Fan", 2, fan2Speed);
-        }
-
-        break;
-      }
-      case 3: {
-        if(modeIndex == 0) {
-          showTempInfo("Current Temp", 1, currentTemp, setTemp);
+          showTempInfo("Crt. Temp", 1, currentTemp, setTemp);
         }
 
         if(modeIndex == 1) {
@@ -298,13 +271,71 @@ void loop(void) {
         
         break;
       }
+
+      case 2: {
+        if(modeIndex == 0) {
+          showFanInfo("Crt. TEC Powr", 1, tecPower);
+        }
+
+        if(modeIndex == 1) {
+          if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
+            setFan(1, TEC, &tecPower);
+          } 
+          if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
+            setFan(-1, TEC, &tecPower);
+          } 
+          showFanInfo("Set TEC Powr", 1, tecPower);
+        }
+
+        break;
+      }    
+
+      case 3: {
+        if(modeIndex == 0) {
+          showFanInfo("Crt. Fan 1 Spd", 1, fan1Speed);
+        }
+
+        if(modeIndex == 1) {
+          if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
+            setFan(1, FAN1, &fan1Speed);
+          } 
+          if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
+            setFan(-1, FAN1, &fan1Speed);
+          } 
+          showFanInfo("Set Fan 1 Spd", 1, fan1Speed);
+        }
+
+        break;
+      }    
+      case 4: {
+        if(modeIndex == 0) {
+          showFanInfo("Crt. Fan 2 Spd", 2, fan2Speed);
+        }
+
+        if(modeIndex == 1) {
+          if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
+            setFan(1, FAN2, &fan2Speed);
+          } 
+          if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
+            setFan(-1, FAN2, &fan2Speed);
+          } 
+          showFanInfo("Set Fan 2 Spd", 2, fan2Speed);
+        }
+
+        break;
+      }
+
     }
   }
 
   if (now - updateTimer >= UPDATE_PERIOD) {
     updateTimer = now;
-    currentTemp = dht22.getTemperature();
-    currentHumidity = dht22.getHumidity();
+    uint8_t err = dht22.getLastError();
+
+    currentTemp = (err != 0) ? 99 : dht22.getTemperature();
+    currentHumidity = (err != 0) ? 99 :  dht22.getHumidity();
+
     readThermisor();
+    //tecPowerController();
   }
 }
