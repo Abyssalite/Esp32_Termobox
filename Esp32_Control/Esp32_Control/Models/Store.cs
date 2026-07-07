@@ -1,11 +1,20 @@
 
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using Avalonia_EventHub;
+
 public class Store
 {
-    public required string Address { get; set; }
-    public required string Status { get; set; }
-    public required string Name { get; set; }
+    private readonly IEventHub _events;
+    public ObservableCollection<Device>? DevicesLists { get; private set; }
 
-    public Store()
+    public Store(IEventHub events)
     {
-    } 
+        _events = events;
+    }
+
+    public async Task StoreAddDevice()
+    {
+        
+    }
 }

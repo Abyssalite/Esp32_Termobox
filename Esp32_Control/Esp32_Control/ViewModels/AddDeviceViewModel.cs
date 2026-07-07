@@ -1,46 +1,26 @@
 ﻿using System;
 using Avalonia_Navigation;
 using Websocket.Client;
+using System.Windows.Input;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Esp32_Control.ViewModels;
 
 public partial class AddDeviceViewModel : ViewModelBase
 {    
     private WebsocketClient? _client;
+    public ICommand? BackCommand { get; }
 
-    private string? _address;
-    public string? Address
-    {
-        get => _address;
-        set
-        {
-            if (value != null)
-            {
-                _address = value;
-                _store.Address = _address;
-            }
-        }
-    }
+    public string? Address { get; set; }
+    public string? Name { get; set; }
 
-    private string? _name;
-    public string? Name
-    {
-        get => _name;
-        set
-        {
-            if (value != null)
-            {
-                _name = value;
-                _store.Status = _name;
-            }
-        }
-    } 
 
     public AddDeviceViewModel(
         Store store,
         INavigatorService navigator
     ):base(store, navigator)
     {
-        Console.WriteLine("test");
+        BackCommand = new AsyncRelayCommand(() => _navigator.OpenPrevious());
+
     }
 }

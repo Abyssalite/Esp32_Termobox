@@ -3,14 +3,49 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Esp32_Control.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Esp32_Control.Views.AddDeviceView"
              x:DataType="vm:AddDeviceViewModel">
 
-	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Padding="100" Margin="100 0">
-		<StackPanel HorizontalAlignment="Stretch" >
-			<TextBox Watermark="Task name" Text="{Binding Name}" Margin="8" />
-			<TextBox Watermark="Description" Text="{Binding Address}" Margin="8" />
-		</StackPanel>
+	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Margin="100 0">
+        <Grid ColumnDefinitions="Auto,*">		
+            <Button
+                Grid.Column="0"
+                Width="40" 
+                Height="40" 
+                Padding="10"
+                Margin="10"
+                CornerRadius="30"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                BorderBrush="Transparent"
+                Background="#FAAA"
+                Command="{Binding BackCommand}">
+                <Image Source="avares://Esp32_Control/Assets/icons8-back-100.png"
+                    Stretch="Uniform"
+                    Width="50"
+                    Height="50" />
+            </Button>   
+
+            <Border Grid.Column="1" VerticalAlignment="Center" Padding="40 100 90 100" >
+                <Grid RowDefinitions="Auto,*">		
+                    <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0 0 100 0">
+                        <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />
+                        <TextBox Watermark="IP address" Text="{Binding Address}" Margin="8" />
+                    </StackPanel>
+                <Button Grid.Row="0"
+                    Content="Add"
+                    Width="80" 
+                    Height="40" 
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    HorizontalContentAlignment="Center"
+                    VerticalContentAlignment="Center"
+                    Padding="10" />  
+                </Grid>    
+            </Border>
+        </Grid>   
 	</Border>
+
 </UserControl>

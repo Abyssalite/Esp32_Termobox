@@ -1,6 +1,10 @@
 #include <U8g2lib.h>
 #include <DHT22.h>      
 #include <string>
+#include <WiFi.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncTCP.h>
+#include <ArduinoJson.h>
 
 #define TR0 10000   // Ω
 #define R   10000
@@ -10,6 +14,9 @@
 
 #define UPDATE_PERIOD 1000
 #define FUNCTION_PERIOD 10
+#define RECONNECT_PERIOD 1000
+#define NOTIFY_PERIOD 1000
+
 #define BUTTON1 9
 #define BUTTON2 10
 #define BUTTON3 2
@@ -23,12 +30,25 @@
 #define DEBOUND_BUTTON 120 // 120ms debounce
 #define DEBOUND_INTERRUPT 100 // 100ms debounce
 
+char* ssid = "Devices";
+char* password = "0948844329";
+
+AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
+JsonDocument telemetryJson;
+
 // OLED constructor
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 6, 5);
 
 DHT22 dht22(20);
 unsigned long updateTimer = 0;
 unsigned long functionTimer = 0;
+unsigned long reconnectTimer = 0;
+unsigned long lastNotify = 0;
+
+bool connected = false;
+int count = 0;
+char* status = "";
 
 uint8_t fan1Speed = 20;
 uint8_t fan2Speed = 20;
@@ -46,6 +66,44 @@ static unsigned long interruptPress = 0;
 
 volatile uint8_t mode[2] = {0};
 volatile uint8_t modeIndex = 0;
+
+void notifyClients() {
+  telemetryJson["fan1Speed"] = fan1Speed;
+  telemetryJson["fan2Speed"] = fan2Speed;
+  telemetryJson["tecPower"] = tecPower;
+  telemetryJson["setTemp"] = setTemp;
+  telemetryJson["currentTemp"] = currentTemp;
+  telemetryJson["currentHumidity"] = currentHumidity;
+  telemetryJson["thermTemp"] = thermTemp;
+  telemetryJson["mode"] = mode[modeIndex];
+  telemetryJson["modeIndex"] = modeIndex;
+
+  String jsonString;
+  serializeJson(telemetryJson, jsonString);
+  ws.textAll(jsonString);
+}
+
+void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len) {
+  if (type == WS_EVT_CONNECT) 
+    status = "WS connected";
+  
+  else if (type == WS_EVT_DISCONNECT) 
+    status = "WS disconnect";
+
+  else if (type == WS_EVT_DATA) {
+    // Handle commands from Avalonia app
+    String message = String((char*)data).substring(0, len);
+
+    /*if (message.startsWith("SET_TEMP:")) {
+      setTemp = message.substring(9).toInt();
+      // constrain if needed
+    } 
+    else if (message.startsWith("SET_FAN:")) {
+      fan1Speed = message.substring(8).toInt();
+    }
+    */
+  }
+}
 
 bool debounceInterrupt(uint8_t btn, uint8_t isHigh) {
   if (isHigh) return false;
@@ -90,7 +148,7 @@ void readThermisor() {
   thermTemp = thermTemp - 273.15;
 }
 
-void tecPowerController(){
+void tecPowerController() {
   float dt = currentTemp - setTemp; 
    if (dt < 0) return;
 
@@ -99,7 +157,7 @@ void tecPowerController(){
 }
 
 
-void showTemp(){
+void showTemp() {
   u8g2.clearBuffer();
 
   u8g2.setFont(u8g2_font_5x8_tf);
@@ -107,12 +165,12 @@ void showTemp(){
   u8g2.print("Co, Ho / Hum");
 
   u8g2.setFont(u8g2_font_7x14_tf);
-  u8g2.setCursor(6, 22);
+  u8g2.setCursor(4, 22);
   u8g2.print(currentTemp, 1);
   u8g2.print(",");
   u8g2.print(thermTemp, 1);
 
-  u8g2.setCursor(6, 38);
+  u8g2.setCursor(4, 38);
   u8g2.print(currentHumidity, 1);
   u8g2.print(" %RH");
 
@@ -128,7 +186,7 @@ void showTempInfo(std::string text, uint8_t num, float data, float data2 = 0) {
     u8g2.print(num);
 
     u8g2.setFont(u8g2_font_7x14_tf);
-    u8g2.setCursor(6, 22);
+    u8g2.setCursor(4, 22);
     u8g2.print(data, 1);
     if (data2) {
       u8g2.print('/');
@@ -146,7 +204,7 @@ void showFanInfo(std::string text, uint8_t num, uint8_t data) {
     u8g2.print(num);
 
     u8g2.setFont(u8g2_font_7x14_tf);
-    u8g2.setCursor(6, 22);
+    u8g2.setCursor(4, 22);
     u8g2.print(data);
     u8g2.sendBuffer();
 }
@@ -162,7 +220,7 @@ void showError(int err) {
 }
 
 void IRAM_ATTR button1ISR() {
-  if (debounceInterrupt(BUTTON1, digitalRead(BUTTON1))){
+  if (debounceInterrupt(BUTTON1, digitalRead(BUTTON1))) {
       switch (mode[modeIndex]) {
       case 0: {
         mode[modeIndex] = 1;
@@ -181,6 +239,10 @@ void IRAM_ATTR button1ISR() {
         break;
       }
       case 4: {
+        mode[modeIndex] = 5;
+        break;
+      }
+      case 5: {
         mode[modeIndex] = 0;
         break;
       }
@@ -189,7 +251,7 @@ void IRAM_ATTR button1ISR() {
 }
 
 void IRAM_ATTR button2ISR() {
-  if (debounceInterrupt(BUTTON2, digitalRead(BUTTON2))){
+  if (debounceInterrupt(BUTTON2, digitalRead(BUTTON2))) {
       modeIndex++;
       if (modeIndex > 1) modeIndex = 0;
   } 
@@ -203,8 +265,6 @@ void setFan(int8_t value, uint8_t fan, uint8_t* fanSpeed) {
 }
 
 void setup(void) {
-
-  Serial.begin(9600);
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
   pinMode(BUTTON3, INPUT_PULLUP);
@@ -220,6 +280,11 @@ void setup(void) {
   ledcAttach(TEC, TEC_FREQ, PWM_RESOLUTION);
   ledcAttach(FAN1, FAN_FREQ, PWM_RESOLUTION);
   ledcAttach(FAN2, FAN_FREQ, PWM_RESOLUTION);
+
+  WiFi.mode(WIFI_STA); 
+  ws.onEvent(onWsEvent);
+  server.addHandler(&ws);
+  server.begin();
 
   u8g2.begin();
   u8g2.enableUTF8Print();
@@ -239,10 +304,11 @@ void loop(void) {
     
     switch (mode[modeIndex]) {
       case 0: {
-        if(modeIndex == 0) {
+        if (modeIndex == 0) {
           showTemp();
         }
-        if(modeIndex == 1) {
+        
+        if (modeIndex == 1) {
           u8g2.clearBuffer();
           u8g2.setFont(u8g2_font_6x10_tf);
           u8g2.setCursor(4, 16);
@@ -254,11 +320,11 @@ void loop(void) {
       }
 
       case 1: {
-        if(modeIndex == 0) {
+        if (modeIndex == 0) {
           showTempInfo("Crt. Temp", 1, currentTemp, setTemp);
         }
 
-        if(modeIndex == 1) {
+        if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             setTemp+=1;
           } 
@@ -273,11 +339,11 @@ void loop(void) {
       }
 
       case 2: {
-        if(modeIndex == 0) {
+        if (modeIndex == 0) {
           showFanInfo("Crt. TEC Powr", 1, tecPower);
         }
 
-        if(modeIndex == 1) {
+        if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             setFan(1, TEC, &tecPower);
           } 
@@ -291,11 +357,11 @@ void loop(void) {
       }    
 
       case 3: {
-        if(modeIndex == 0) {
+        if (modeIndex == 0) {
           showFanInfo("Crt. Fan 1 Spd", 1, fan1Speed);
         }
 
-        if(modeIndex == 1) {
+        if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             setFan(1, FAN1, &fan1Speed);
           } 
@@ -307,12 +373,13 @@ void loop(void) {
 
         break;
       }    
+
       case 4: {
-        if(modeIndex == 0) {
+        if (modeIndex == 0) {
           showFanInfo("Crt. Fan 2 Spd", 2, fan2Speed);
         }
 
-        if(modeIndex == 1) {
+        if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             setFan(1, FAN2, &fan2Speed);
           } 
@@ -325,6 +392,61 @@ void loop(void) {
         break;
       }
 
+      case 5: {
+        if (modeIndex == 0) {
+          u8g2.clearBuffer();
+
+          u8g2.setFont(u8g2_font_5x8_tf);
+          u8g2.setCursor(4, 8);
+          u8g2.print("Connected to");
+
+          u8g2.setFont(u8g2_font_5x8_tf);
+          u8g2.setCursor(4, 18);
+          u8g2.print(WiFi.localIP());
+
+          u8g2.setFont(u8g2_font_5x8_tf);
+          u8g2.setCursor(4, 28);
+          u8g2.print(status);
+
+          u8g2.sendBuffer();
+        }
+
+        if (modeIndex == 1) {
+          if (now - reconnectTimer >= RECONNECT_PERIOD) {
+            reconnectTimer = now;
+
+            if (!connected) {
+              WiFi.begin(ssid, password);
+              connected = !connected;
+            }
+            
+            if (WiFi.status() != WL_CONNECTED) {
+              u8g2.clearBuffer();
+              u8g2.setFont(u8g2_font_6x10_tf);
+              u8g2.setCursor(4, 16);
+              u8g2.print("Connecting");
+
+              u8g2.setFont(u8g2_font_6x10_tf);
+              u8g2.setCursor(4, 26);
+              char dot = (count % 2 == 0) ? '/' : '\\';
+              u8g2.print(dot);
+
+              u8g2.sendBuffer();  
+              count++;
+              return;
+              
+            } else {
+              u8g2.clearBuffer();
+              u8g2.setFont(u8g2_font_6x10_tf);
+              u8g2.setCursor(4, 16);
+              u8g2.print("Connected");
+              u8g2.sendBuffer();  
+            }
+          }
+        }
+
+        break;
+      }
     }
   }
 
@@ -338,4 +460,11 @@ void loop(void) {
     readThermisor();
     //tecPowerController();
   }
+
+  if (now - lastNotify >= NOTIFY_PERIOD) {
+    notifyClients();
+    lastNotify = now;
+  }
+
+  ws.cleanupClients();
 }

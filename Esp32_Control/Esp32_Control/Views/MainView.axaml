@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Esp32_Control.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="Esp32_Control.Views.MainView"
              x:DataType="vm:MainViewModel">
 
@@ -12,4 +12,5 @@
 	</Design.DataContext>
 
 	<ContentControl Content="{Binding ViewHost.MainView}" />
+    
 </UserControl>
