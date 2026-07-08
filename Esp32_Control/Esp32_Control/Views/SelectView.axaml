@@ -6,15 +6,51 @@
              x:Class="Esp32_Control.Views.SelectView"
              x:DataType="vm:SelectViewModel">
 
-	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Padding="20 100" Margin="100 0">
-		<StackPanel HorizontalAlignment="Center" >
-			<Button Content="Add Manually" 
+	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Margin="100 0">
+		<Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Center" Margin="20 100">
+                <ListBox Grid.Column="0" ItemsSource="{Binding DevicesLists}"
+					HorizontalAlignment="Center" 
+					VerticalAlignment="Center" 
+                    SelectionMode="Single"
+					Margin="0 0 10 0"
+					Background="Transparent"
+                    SelectedItem="{Binding $parent[UserControl].((vm:SelectViewModel)DataContext)?.SelectedDevice, Mode=TwoWay}">
+
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<StackPanel Orientation="Horizontal" />
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+					
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+								<Border VerticalAlignment="Center" 
+									HorizontalAlignment="Center"
+									Width="160"
+									Height="80"
+									CornerRadius="20"
+									Background="gray">
+									<TextBlock Text="{Binding Name}" 
+										HorizontalAlignment="Center" 
+										VerticalAlignment="Center" 
+										FontSize="14" />
+								</Border>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>   
+
+			<Button Grid.Column="1" Content="Add Manually" 
 				HorizontalAlignment="Center" 
 				VerticalAlignment="Center" 
-				Padding="20 40" 
+				HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+				Height="80"
+				Width="160"
 				CornerRadius="20"
 				Command="{Binding AddDeviceCommand}" />
-		</StackPanel>
+		</Grid>
 	</Border>
-	
+
 </UserControl>

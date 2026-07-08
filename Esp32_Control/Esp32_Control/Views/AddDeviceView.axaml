@@ -28,12 +28,16 @@
                     Height="50" />
             </Button>   
 
-            <Border Grid.Column="1" VerticalAlignment="Center" Padding="40 100 90 100" >
-                <Grid RowDefinitions="Auto,*">		
-                    <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0 0 100 0">
-                        <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />
-                        <TextBox Watermark="IP address" Text="{Binding Address}" Margin="8" />
-                    </StackPanel>
+            <Grid Grid.Column="1" 
+                VerticalAlignment="Center" 
+                Margin="40 102 90 103" 
+                RowDefinitions="Auto,*">	
+                	
+                <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0 0 100 0">
+                    <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />
+                    <TextBox Watermark="IP address" Text="{Binding Address}" Margin="8" />
+                </StackPanel>
+
                 <Button Grid.Row="0"
                     Content="Add"
                     Width="80" 
@@ -42,9 +46,9 @@
                     VerticalAlignment="Center"
                     HorizontalContentAlignment="Center"
                     VerticalContentAlignment="Center"
-                    Padding="10" />  
-                </Grid>    
-            </Border>
+                    Padding="10" 
+                    Command="{Binding AddDeviceCommand}" />  
+            </Grid>    
         </Grid>   
 	</Border>
 

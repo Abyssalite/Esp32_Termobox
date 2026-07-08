@@ -10,6 +10,6 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<MainViewModel>();
         collection.AddTransient<SelectViewModel>();
         collection.AddTransient<AddDeviceViewModel>();
-
+        collection.AddTransient<DeviceViewModel>();
     }
 }
