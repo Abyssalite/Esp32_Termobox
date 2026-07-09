@@ -6,7 +6,7 @@
              x:Class="Esp32_Control.Views.AddDeviceView"
              x:DataType="vm:AddDeviceViewModel">
 
-	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Margin="100 0">
+	<Border x:Name="DeviceAddBorder" VerticalAlignment="Center" CornerRadius="10" Background="#3333">
         <Grid ColumnDefinitions="Auto,*">		
             <Button
                 Grid.Column="0"
@@ -28,17 +28,17 @@
                     Height="50" />
             </Button>   
 
-            <Grid Grid.Column="1" 
-                VerticalAlignment="Center" 
-                Margin="40 102 90 103" 
-                RowDefinitions="Auto,*">	
-                	
-                <StackPanel Grid.Row="0" HorizontalAlignment="Stretch" Margin="0 0 100 0">
+            <Grid x:Name="DeviceAddStack" 
+                Grid.Column="1" 
+				HorizontalAlignment="Stretch" 
+                VerticalAlignment="Center">	
+
+                <StackPanel x:Name="DeviceAddTextStack" HorizontalAlignment="Stretch">
                     <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />
                     <TextBox Watermark="IP address" Text="{Binding Address}" Margin="8" />
                 </StackPanel>
 
-                <Button Grid.Row="0"
+                <Button x:Name="DeviceAddListButton"
                     Content="Add"
                     Width="80" 
                     Height="40" 

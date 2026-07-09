@@ -8,7 +8,7 @@ using Esp32_Control.Events;
 public class Store
 {
     private readonly IEventHub _events;
-    public required ObservableCollection<Device> DevicesLists { get; set; } = new();
+    public required ObservableCollection<Device> DevicesList { get; set; } = new();
     public Device? SelectedDevice;
 
 
@@ -27,10 +27,10 @@ public class Store
 
     public async Task<bool> StoreAddDevice(Device device)
     {
-        var deviceName = DevicesLists.FirstOrDefault(d => d.Name == device.Name);
+        var deviceName = DevicesList.FirstOrDefault(d => d.Name == device.Name);
         if (deviceName != null) return true;
 
-        DevicesLists.Add(device);
+        DevicesList.Add(device);
 
         await Helpers.SaveAsync(this);
         return false;

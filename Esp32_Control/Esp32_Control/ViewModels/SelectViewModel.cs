@@ -11,7 +11,7 @@ namespace Esp32_Control.ViewModels;
 
 public partial class SelectViewModel : ViewModelBase
 {    
-    public ObservableCollection<Device> DevicesLists { get; }
+    public ObservableCollection<Device> DevicesList { get; }
     private Device? _selectedDevice;
     public Device? SelectedDevice
     {
@@ -37,7 +37,7 @@ public partial class SelectViewModel : ViewModelBase
         IEventHub events
     ):base(store, navigator, events)
     {
-        DevicesLists = _store.DevicesLists;
+        DevicesList = _store.DevicesList;
         AddDeviceCommand = new AsyncRelayCommand(addDeviceAsync);
 
     }

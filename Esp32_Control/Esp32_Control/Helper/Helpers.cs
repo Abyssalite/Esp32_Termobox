@@ -38,7 +38,7 @@ public static class Helpers
     public static async Task SaveAsync(Store store)
     {
 
-        string json = JsonSerializer.Serialize(store.DevicesLists, AppJsonContext.Default.ObservableCollectionDevice);
+        string json = JsonSerializer.Serialize(store.DevicesList, AppJsonContext.Default.ObservableCollectionDevice);
 
         string path = Path.Combine(GetAppDataPath(), "Devices.json");
 

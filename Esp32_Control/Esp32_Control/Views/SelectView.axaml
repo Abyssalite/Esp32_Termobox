@@ -6,27 +6,42 @@
              x:Class="Esp32_Control.Views.SelectView"
              x:DataType="vm:SelectViewModel">
 
-	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Margin="100 0">
-		<Grid ColumnDefinitions="*,Auto" HorizontalAlignment="Center" Margin="20 100">
-                <ListBox Grid.Column="0" ItemsSource="{Binding DevicesLists}"
-					HorizontalAlignment="Center" 
+	<Border x:Name="DeviceSelectBorder" VerticalAlignment="Center" CornerRadius="10" Background="#3333">
+		<Grid x:Name="DeviceSelectStack" 
+			HorizontalAlignment="Center"
+			VerticalAlignment="Center" 
+			Margin="20 100">
+                <ListBox x:Name="DeviceSelectListBox"
+					ItemsSource="{Binding DevicesList}"
+					HorizontalAlignment="Stretch" 
 					VerticalAlignment="Center" 
                     SelectionMode="Single"
-					Margin="0 0 10 0"
 					Background="Transparent"
+					ScrollViewer.HorizontalScrollBarVisibility="Auto"
+					ScrollViewer.VerticalScrollBarVisibility="Auto"
                     SelectedItem="{Binding $parent[UserControl].((vm:SelectViewModel)DataContext)?.SelectedDevice, Mode=TwoWay}">
+					<ListBox.Styles>
+						<Style Selector="ListBox.vertical">
+							<Setter Property="ItemsPanel">
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Vertical"/>
+								</ItemsPanelTemplate>
+							</Setter>
+						</Style>
 
-					<ListBox.ItemsPanel>
-						<ItemsPanelTemplate>
-							<StackPanel Orientation="Horizontal" />
-						</ItemsPanelTemplate>
-					</ListBox.ItemsPanel>
-					
+						<Style Selector="ListBox.horizontal">
+							<Setter Property="ItemsPanel">
+								<ItemsPanelTemplate>
+									<StackPanel Orientation="Horizontal"/>
+								</ItemsPanelTemplate>
+							</Setter>
+						</Style>
+					</ListBox.Styles>
+
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
-								<Border VerticalAlignment="Center" 
-									HorizontalAlignment="Center"
+								<Border
 									Width="160"
 									Height="80"
 									CornerRadius="20"
@@ -41,7 +56,8 @@
                     </ListBox.ItemTemplate>
                 </ListBox>   
 
-			<Button Grid.Column="1" Content="Add Manually" 
+			<Button x:Name="DeviceSelectListButton"
+				Content="Add Manually" 
 				HorizontalAlignment="Center" 
 				VerticalAlignment="Center" 
 				HorizontalContentAlignment="Center"

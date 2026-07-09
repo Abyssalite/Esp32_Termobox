@@ -23,7 +23,7 @@ public partial class MainViewModel : ViewModelBase
 
     public async Task InitializeAsync()
     {        
-        _store.DevicesLists = await Helpers.LoadAsync() ?? [];
+        _store.DevicesList = await Helpers.LoadAsync() ?? [];
 
         var vm = App.Services?.GetRequiredService<SelectViewModel>();
         await _navigator.NavigateMain(vm); 
