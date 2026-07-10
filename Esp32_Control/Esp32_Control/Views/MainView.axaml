@@ -12,5 +12,4 @@
 	</Design.DataContext>
 
 	<ContentControl Content="{Binding ViewHost.MainView}" />
-    
 </UserControl>

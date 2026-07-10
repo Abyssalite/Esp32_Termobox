@@ -25,5 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Esp32_Control\Esp32_Control.csproj" />
+    <ProjectReference Include="../../Avalonia_Navigation/Avalonia_Navigation/Avalonia_Navigation.csproj" />
   </ItemGroup>
 </Project>

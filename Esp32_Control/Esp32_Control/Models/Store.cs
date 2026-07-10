@@ -10,7 +10,7 @@ public class Store
     private readonly IEventHub _events;
     public required ObservableCollection<Device> DevicesList { get; set; } = new();
     public Device? SelectedDevice;
-
+    public DeviceStatus? deviceStatus { get; private set; }= new();
 
     public Store(IEventHub events)
     {
@@ -23,6 +23,14 @@ public class Store
 
         SelectedDevice = device;
         _events.Publish(new SelectedDeviceChangedEvent(SelectedDevice));
+    }
+
+    public void StoreUpdateDeviceStatus(DeviceStatus? status)
+    {
+        if (status == null) return;
+
+        deviceStatus = status;
+        _events.Publish(new DeviceStatusChangedEvent());
     }
 
     public async Task<bool> StoreAddDevice(Device device)
