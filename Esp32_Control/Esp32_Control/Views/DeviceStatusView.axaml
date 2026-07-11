@@ -6,30 +6,30 @@
              x:Class="Esp32_Control.Views.DeviceStatusView"
              x:DataType="vm:DeviceStatusViewModel">
 
-	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333" Margin="100 0">
+	<Border VerticalAlignment="Center" CornerRadius="10" Background="#3333">
  
 				<StackPanel Margin="25" Spacing="8">
 
 					<TextBlock Text="Current Temperature" FontWeight="SemiBold"/>
-					<TextBlock Text="{Binding DeviceStatus.currentTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.CurrentTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
 
 					<TextBlock Text="Set Temperature" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.setTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.SetTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
 
 					<TextBlock Text="Fan 1 Speed" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.fan1Speed, StringFormat='{} {0}%'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.Fan1Speed, StringFormat='{} {0}%'}" FontSize="18"/>
 
 					<TextBlock Text="Fan 2 Speed" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.fan2Speed, StringFormat='{} {0}%'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.Fan2Speed, StringFormat='{} {0}%'}" FontSize="18"/>
 
 					<TextBlock Text="TEC Power" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.tecPower, StringFormat='{} {0}%'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.TecPower, StringFormat='{} {0}%'}" FontSize="18"/>
 
 					<TextBlock Text="Humidity" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.currentHumidity, StringFormat='{} {0}%'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.CurrentHumidity, StringFormat='{} {0}%'}" FontSize="18"/>
 
 					<TextBlock Text="Thermistor Temp" FontWeight="SemiBold" Margin="0 8 0 0"/>
-					<TextBlock Text="{Binding DeviceStatus.thermTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
+					<TextBlock Text="{Binding DeviceStatus.ThermTemp, StringFormat='{} {0} °C'}" FontSize="18"/>
 				</StackPanel>
 	</Border>
 

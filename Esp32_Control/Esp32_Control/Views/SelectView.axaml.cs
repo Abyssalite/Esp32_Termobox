@@ -2,8 +2,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
-using Avalonia.Layout;
 using Avalonia.Threading;
 
 namespace Esp32_Control.Views;

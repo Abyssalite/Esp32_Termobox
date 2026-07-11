@@ -40,7 +40,7 @@ public partial class AddDeviceView : UserControl
         {
             DeviceAddBorder.Margin = new Thickness(20, 50, 20, 50);
             DeviceAddTextStack.Margin = new Thickness(0, 0, 0, 20);
-            DeviceAddStack.Margin = new Thickness(-30, 102, 30, 103);
+            DeviceAddStack.Margin = new Thickness(-30, 103, 30, 102);
 
             DeviceAddStack.RowDefinitions = new RowDefinitions("*,Auto");
             DeviceAddStack.ColumnDefinitions = new ColumnDefinitions("*");
@@ -52,7 +52,7 @@ public partial class AddDeviceView : UserControl
         {
             DeviceAddBorder.Margin = new Thickness(100, 0, 100, 0);
             DeviceAddTextStack.Margin = new Thickness(0, 0, 50, 0);
-            DeviceAddStack.Margin = new Thickness(40, 102, 90, 103);
+            DeviceAddStack.Margin = new Thickness(40, 103, 90, 102);
 
             DeviceAddStack.RowDefinitions = new RowDefinitions("*");
             DeviceAddStack.ColumnDefinitions = new ColumnDefinitions("*,Auto");

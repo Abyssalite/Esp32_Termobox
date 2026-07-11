@@ -9,13 +9,13 @@
 #define TR0 10000   // Ω
 #define R   10000
 #define B   3970  
-#define VCC 3.3    //Supply  voltage
+#define VCC 3.3    // Supply  voltage
 #define THERMISTOR A0
 
 #define UPDATE_PERIOD 1000
 #define FUNCTION_PERIOD 10
 #define RECONNECT_PERIOD 1000
-#define NOTIFY_PERIOD 1000
+#define NOTIFY_PERIOD 1200
 
 #define BUTTON1 9
 #define BUTTON2 10
@@ -68,15 +68,15 @@ volatile uint8_t mode[2] = {0};
 volatile uint8_t modeIndex = 0;
 
 void notifyClients() {
-  telemetryJson["fan1Speed"] = fan1Speed;
-  telemetryJson["fan2Speed"] = fan2Speed;
-  telemetryJson["tecPower"] = tecPower;
-  telemetryJson["setTemp"] = setTemp;
-  telemetryJson["currentTemp"] = currentTemp;
-  telemetryJson["currentHumidity"] = currentHumidity;
-  telemetryJson["thermTemp"] = thermTemp;
-  telemetryJson["mode"] = mode[modeIndex];
-  telemetryJson["modeIndex"] = modeIndex;
+  telemetryJson["Fan1Speed"] = fan1Speed;
+  telemetryJson["Fan2Speed"] = fan2Speed;
+  telemetryJson["TecPower"] = tecPower;
+  telemetryJson["SetTemp"] = setTemp;
+  telemetryJson["CurrentTemp"] = currentTemp;
+  telemetryJson["CurrentHumidity"] = currentHumidity;
+  telemetryJson["ThermTemp"] = thermTemp;
+  telemetryJson["Mode"] = mode[modeIndex];
+  telemetryJson["ModeIndex"] = modeIndex;
 
   String jsonString;
   serializeJson(telemetryJson, jsonString);
@@ -91,17 +91,23 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     status = "WS disconnect";
 
   else if (type == WS_EVT_DATA) {
-    // Handle commands from Avalonia app
+    // Handle commands from app
     String message = String((char*)data).substring(0, len);
 
-    /*if (message.startsWith("SET_TEMP:")) {
-      setTemp = message.substring(9).toInt();
-      // constrain if needed
+    if (message.startsWith("SetTemp:")) {
+      setTemp = message.substring(8).toFloat();
+
     } 
-    else if (message.startsWith("SET_FAN:")) {
-      fan1Speed = message.substring(8).toInt();
+    else if (message.startsWith("Fan1Speed:")) {
+      fan1Speed = message.substring(10).toInt();
     }
-    */
+    else if (message.startsWith("Fan2Speed:")) {
+      fan2Speed = message.substring(10).toInt();
+    }
+    else if (message.startsWith("TecPower:")) {
+      tecPower = message.substring(9).toInt();
+    }
+    lastNotify = millis();
   }
 }
 
@@ -156,6 +162,10 @@ void tecPowerController() {
   tecPower = constrain(tecPower, 10, 90);
 }
 
+void setPower(uint8_t pin, uint8_t* fanSpeed) {
+    uint8_t tmp = constrain(*fanSpeed, 1, 100);
+    ledcWrite(pin, map(tmp, 0, 100, 0, 1024));
+}
 
 void showTemp() {
   u8g2.clearBuffer();
@@ -195,7 +205,7 @@ void showTempInfo(std::string text, uint8_t num, float data, float data2 = 0) {
     u8g2.sendBuffer();
 }
 
-void showFanInfo(std::string text, uint8_t num, uint8_t data) {
+void showPowerInfo(std::string text, uint8_t num, uint8_t data) {
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_5x8_tf);
     u8g2.setCursor(4, 8);
@@ -257,14 +267,8 @@ void IRAM_ATTR button2ISR() {
   } 
 }
 
-void setFan(int8_t value, uint8_t fan, uint8_t* fanSpeed) {
-    *fanSpeed += value;
-    uint8_t tmp = constrain(*fanSpeed, 1, 100);
-    *fanSpeed = tmp;
-    ledcWrite(fan, map(tmp, 0, 100, 0, 1024));
-}
-
 void setup(void) {
+  //Serial.begin(9600);
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
   pinMode(BUTTON3, INPUT_PULLUP);
@@ -326,10 +330,10 @@ void loop(void) {
 
         if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setTemp+=1;
+            setTemp+=0.5;
           } 
           if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setTemp-=1;
+            setTemp-=0.5;
           } 
           setTemp = constrain(setTemp, -10, 30);
           showTempInfo("Set Temp", 1, setTemp);
@@ -340,17 +344,18 @@ void loop(void) {
 
       case 2: {
         if (modeIndex == 0) {
-          showFanInfo("Crt. TEC Powr", 1, tecPower);
+          showPowerInfo("Crt. TEC Powr", 1, tecPower);
         }
 
         if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setFan(1, TEC, &tecPower);
+            tecPower++;
           } 
           if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setFan(-1, TEC, &tecPower);
+            tecPower--;
           } 
-          showFanInfo("Set TEC Powr", 1, tecPower);
+          tecPower = constrain(tecPower, 1, 100);
+          showPowerInfo("Set TEC Powr", 1, tecPower);
         }
 
         break;
@@ -358,17 +363,18 @@ void loop(void) {
 
       case 3: {
         if (modeIndex == 0) {
-          showFanInfo("Crt. Fan 1 Spd", 1, fan1Speed);
+          showPowerInfo("Crt. Fan 1 Spd", 1, fan1Speed);
         }
 
         if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setFan(1, FAN1, &fan1Speed);
+            fan1Speed++;
           } 
           if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setFan(-1, FAN1, &fan1Speed);
+            fan1Speed--;
           } 
-          showFanInfo("Set Fan 1 Spd", 1, fan1Speed);
+          fan1Speed = constrain(fan1Speed, 1, 100);
+          showPowerInfo("Set Fan 1 Spd", 1, fan1Speed);
         }
 
         break;
@@ -376,17 +382,18 @@ void loop(void) {
 
       case 4: {
         if (modeIndex == 0) {
-          showFanInfo("Crt. Fan 2 Spd", 2, fan2Speed);
+          showPowerInfo("Crt. Fan 2 Spd", 2, fan2Speed);
         }
 
         if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            setFan(1, FAN2, &fan2Speed);
+            fan1Speed++;
           } 
           if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            setFan(-1, FAN2, &fan2Speed);
+            fan1Speed--;
           } 
-          showFanInfo("Set Fan 2 Spd", 2, fan2Speed);
+          fan2Speed = constrain(fan2Speed, 1, 100);
+          showPowerInfo("Set Fan 2 Spd", 2, fan2Speed);
         }
 
         break;
@@ -459,6 +466,9 @@ void loop(void) {
 
     readThermisor();
     //tecPowerController();
+    setPower(FAN1, &fan1Speed);
+    setPower(FAN2, &fan2Speed);
+    setPower(TEC, &tecPower);
   }
 
   if (now - lastNotify >= NOTIFY_PERIOD) {

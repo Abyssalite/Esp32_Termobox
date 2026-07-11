@@ -8,6 +8,11 @@ using System.Net.Sockets;
 
 public static class Helpers
 {
+    public static object? GetPropertyValue(object obj, string propertyName)
+    {
+        return obj.GetType().GetProperty(propertyName)?.GetValue(obj);
+    } 
+    
     public static bool IsValidIP(string? ip)
     {
         if (string.IsNullOrWhiteSpace(ip))

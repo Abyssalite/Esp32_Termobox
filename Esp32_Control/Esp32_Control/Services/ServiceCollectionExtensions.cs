@@ -12,6 +12,7 @@ public static class ServiceCollectionExtensions
         collection.AddTransient<AddDeviceViewModel>();
         collection.AddTransient<DeviceViewModel>();
         collection.AddTransient<DeviceStatusViewModel>();
+        collection.AddTransient<DeviceSettingViewModel>();
         collection.AddTransient<TabBarViewModel>();
 
     }

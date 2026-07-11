@@ -1,12 +1,12 @@
 public class DeviceStatus
 {
-    public int fan1Speed { get; set; }
-    public int fan2Speed { get; set; }
-    public int tecPower { get; set; }
-    public float setTemp { get; set; }
-    public float currentTemp { get; set; }
-    public float currentHumidity { get; set; }
-    public float thermTemp { get; set; }
-    public int mode { get; set; }
-    public int modeIndex { get; set; }
+    public int Fan1Speed { get; set; }
+    public int Fan2Speed { get; set; }
+    public int TecPower { get; set; }
+    public float SetTemp { get; set; }
+    public float CurrentTemp { get; set; }
+    public float CurrentHumidity { get; set; }
+    public float ThermTemp { get; set; }
+    public int Mode { get; set; }
+    public int ModeIndex { get; set; }
 }

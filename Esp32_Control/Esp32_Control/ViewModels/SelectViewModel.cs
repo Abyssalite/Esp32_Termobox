@@ -11,6 +11,8 @@ namespace Esp32_Control.ViewModels;
 
 public partial class SelectViewModel : ViewModelBase
 {    
+    public ICommand AddDeviceCommand { get; }
+
     public ObservableCollection<Device> DevicesList { get; }
     private Device? _selectedDevice;
     public Device? SelectedDevice
@@ -28,9 +30,6 @@ public partial class SelectViewModel : ViewModelBase
         }
     }
     
-    public ICommand AddDeviceCommand { get; }
-
-
     public SelectViewModel(
         Store store,
         INavigatorService navigator,
@@ -39,7 +38,6 @@ public partial class SelectViewModel : ViewModelBase
     {
         DevicesList = _store.DevicesList;
         AddDeviceCommand = new AsyncRelayCommand(addDeviceAsync);
-
     }
 
     async Task addDeviceAsync()

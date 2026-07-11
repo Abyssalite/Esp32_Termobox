@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Esp32_Control.ViewModels"
+             x:Class="Esp32_Control.Views.DeviceSettingView"
+             x:DataType="vm:DeviceSettingViewModel">
+
+    <Border VerticalAlignment="Center" CornerRadius="10" Background="#3333">
+        <Grid Margin="25"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+            RowSpacing="8">
+
+            <TextBlock Grid.Row="0"
+                Text="Set Temperature"
+                FontWeight="SemiBold"
+                Margin="0 8 0 0" />
+            <Grid Grid.Row="1"
+                ColumnDefinitions="50,*"
+                ColumnSpacing="10">
+                <TextBlock Grid.Column="0"
+                    Text="{Binding SetTemp, StringFormat='{}{0} °C'}"
+                    FontSize="18"
+                    VerticalAlignment="Center" />
+
+                <Slider Grid.Column="1"
+                    Minimum="-10"
+                    Maximum="30"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    TickPlacement="BottomRight"
+                    Value="{Binding SetTemp}" />
+            </Grid>
+
+            <TextBlock Grid.Row="2"
+                Text="Fan 1 Speed"
+                FontWeight="SemiBold"
+                Margin="0 8 0 0" />
+            <Grid Grid.Row="3"
+                ColumnDefinitions="50,*"
+                ColumnSpacing="10">
+                <TextBlock Grid.Column="0"
+                    Text="{Binding Fan1Speed, StringFormat='{}{0}%'}"
+                    FontSize="18"
+                    VerticalAlignment="Center" />
+
+                <Slider Grid.Column="1"
+                    Minimum="1"
+                    Maximum="100"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    TickPlacement="BottomRight"
+                    Value="{Binding Fan1Speed}" />
+            </Grid>
+
+            <TextBlock Grid.Row="4"
+                Text="Fan 2 Speed"
+                FontWeight="SemiBold"
+                Margin="0 8 0 0" />
+            <Grid Grid.Row="5"
+                ColumnDefinitions="50,*"
+                ColumnSpacing="10">
+                <TextBlock Grid.Column="0"
+                    Text="{Binding Fan2Speed, StringFormat='{}{0}%'}"
+                    FontSize="18"
+                    VerticalAlignment="Center" />
+
+                <Slider Grid.Column="1"
+                    Minimum="1"
+                    Maximum="100"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    TickPlacement="BottomRight"
+                    Value="{Binding Fan2Speed}" />
+            </Grid>
+
+            <TextBlock Grid.Row="6"
+                Text="TEC Power"
+                FontWeight="SemiBold"
+                Margin="0 8 0 0" />
+            <Grid Grid.Row="7"
+                ColumnDefinitions="50,*"
+                ColumnSpacing="10">
+                <TextBlock Grid.Column="0"
+                    Text="{Binding TecPower, StringFormat='{}{0}%'}"
+                    FontSize="18"
+                    VerticalAlignment="Center" />
+
+                <Slider Grid.Column="1"
+                    Minimum="1"
+                    Maximum="100"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True"
+                    TickPlacement="BottomRight"
+                    Value="{Binding TecPower}" />
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
