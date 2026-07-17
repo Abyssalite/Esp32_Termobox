@@ -61,15 +61,15 @@ public partial class DeviceViewModel : ViewModelBase
                 _delayToken = new CancellationTokenSource();
 
                 var token = _delayToken.Token;
-                Task.Delay(200, token).ContinueWith(t =>
+                Task.Delay(100, token).ContinueWith(t =>
                 {
                     if (t.IsCanceled) return;
                     if (_wsClient?.IsStarted == true)
-                        _wsClient.Send($"{evt.name}:{evt.value}");
+                        _wsClient.Send($"{evt.name}:{evt.value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
                 });
             }
         }));
-        
+
         _subscriptions.Add(_events.Subscribe<LayoutChangedEvent>(async evt =>
         {
             if (evt.mode == 2)

@@ -19,14 +19,14 @@
                 ColumnDefinitions="50,*"
                 ColumnSpacing="10">
                 <TextBlock Grid.Column="0"
-                    Text="{Binding SetTemp, StringFormat='{}{0} °C'}"
+                    Text="{Binding SetTemp, StringFormat='{}{0:0.0}C'}"
                     FontSize="18"
                     VerticalAlignment="Center" />
 
                 <Slider Grid.Column="1"
                     Minimum="-10"
                     Maximum="30"
-                    TickFrequency="1"
+                    TickFrequency="0.5"
                     IsSnapToTickEnabled="True"
                     TickPlacement="BottomRight"
                     Value="{Binding SetTemp}" />

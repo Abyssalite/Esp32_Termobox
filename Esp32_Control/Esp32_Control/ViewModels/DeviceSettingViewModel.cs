@@ -9,7 +9,7 @@ public partial class DeviceSettingViewModel : ViewModelBase
 {    
     [ObservableProperty]
     private DeviceStatus? deviceStatus = new();
-    private float? _setTemp = 1;
+    private float? _setTemp = 1.0f;
     public float? SetTemp
     {
         get => _setTemp;
@@ -18,7 +18,7 @@ public partial class DeviceSettingViewModel : ViewModelBase
             if (value == _setTemp) return;
             _setTemp = value;
             OnPropertyChanged(nameof(SetTemp));
-            _events.Publish(new SettingChangedEvent("SetTemp", _setTemp ?? 1));
+            _events.Publish(new SettingChangedEvent("SetTemp", _setTemp ?? 1.0f));
         }
     }
     private int? _fan1Speed = 1;

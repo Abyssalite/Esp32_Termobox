@@ -1,5 +1,5 @@
 #include <U8g2lib.h>
-#include <DHT22.h>      
+#include <ErriezDHT22.h>      
 #include <string>
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
@@ -12,10 +12,11 @@
 #define VCC 3.3    // Supply  voltage
 #define THERMISTOR A0
 
-#define UPDATE_PERIOD 1000
+#define UPDATE_PERIOD 2000
 #define FUNCTION_PERIOD 10
+#define CONTROL_PERIOD 500
 #define RECONNECT_PERIOD 1000
-#define NOTIFY_PERIOD 1200
+#define NOTIFY_PERIOD 1000
 
 #define BUTTON1 9
 #define BUTTON2 10
@@ -42,13 +43,15 @@ U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE, 6, 5);
 
 DHT22 dht22(20);
 unsigned long updateTimer = 0;
+unsigned long controlTimer = 0;
 unsigned long functionTimer = 0;
 unsigned long reconnectTimer = 0;
 unsigned long lastNotify = 0;
 
 bool connected = false;
 int count = 0;
-char* status = "";
+String status = "";
+String message = "";
 
 uint8_t fan1Speed = 20;
 uint8_t fan2Speed = 20;
@@ -92,11 +95,10 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 
   else if (type == WS_EVT_DATA) {
     // Handle commands from app
-    String message = String((char*)data).substring(0, len);
+    message = String((char*)data).substring(0, len);
 
     if (message.startsWith("SetTemp:")) {
       setTemp = message.substring(8).toFloat();
-
     } 
     else if (message.startsWith("Fan1Speed:")) {
       fan1Speed = message.substring(10).toInt();
@@ -387,10 +389,10 @@ void loop(void) {
 
         if (modeIndex == 1) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
-            fan1Speed++;
+            fan2Speed++;
           } 
           if (debounceButtons(BUTTON4, digitalRead(BUTTON4))) {
-            fan1Speed--;
+            fan2Speed--;
           } 
           fan2Speed = constrain(fan2Speed, 1, 100);
           showPowerInfo("Set Fan 2 Spd", 2, fan2Speed);
@@ -447,6 +449,8 @@ void loop(void) {
               u8g2.setFont(u8g2_font_6x10_tf);
               u8g2.setCursor(4, 16);
               u8g2.print("Connected");
+              u8g2.setCursor(2, 28);
+              u8g2.print(message);
               u8g2.sendBuffer();  
             }
           }
@@ -459,10 +463,28 @@ void loop(void) {
 
   if (now - updateTimer >= UPDATE_PERIOD) {
     updateTimer = now;
-    uint8_t err = dht22.getLastError();
 
-    currentTemp = (err != 0) ? 99 : dht22.getTemperature();
-    currentHumidity = (err != 0) ? 99 :  dht22.getHumidity();
+    if (dht22.available()) {
+      int16_t tmp = dht22.readTemperature();
+      if (tmp == ~0) 
+        currentTemp = 99;
+      else {
+        currentTemp = tmp / 10;
+        currentTemp += (float(tmp % 10)/10);
+      }
+      
+      tmp = dht22.readHumidity();
+      if (tmp == ~0)
+        currentHumidity = 99;
+      else {
+        currentHumidity = tmp / 10;
+        currentHumidity += (float(tmp % 10)/10);
+      }
+    }
+  }
+
+  if (now - controlTimer >= CONTROL_PERIOD) {
+    controlTimer = now;
 
     readThermisor();
     //tecPowerController();
