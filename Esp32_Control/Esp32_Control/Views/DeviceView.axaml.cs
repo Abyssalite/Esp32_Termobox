@@ -44,7 +44,7 @@ public partial class DeviceView : UserControl
 
         if (width < 800)
         {
-            DeviceStatusContent.Margin = new Thickness(80, 0, 80, 0);
+            DeviceStatusContent.Margin = new Thickness(60, 0, 60, 0);
             DeviceSettingContent.Margin = new Thickness(0, 0, 0, 0);
 
             DeviceStatusGrid.RowDefinitions = new RowDefinitions("*,Auto");

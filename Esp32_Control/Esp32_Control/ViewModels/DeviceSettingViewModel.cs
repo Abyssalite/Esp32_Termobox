@@ -8,7 +8,8 @@ namespace Esp32_Control.ViewModels;
 public partial class DeviceSettingViewModel : ViewModelBase
 {    
     [ObservableProperty]
-    private DeviceStatus? deviceStatus = new();
+    private int? numberMode = 1;
+
     private float? _setTemp = 1.0f;
     public float? SetTemp
     {
@@ -28,7 +29,7 @@ public partial class DeviceSettingViewModel : ViewModelBase
         set
         {
             if (value == _fan1Speed) return;
-            _fan1Speed = value ?? 10;
+            _fan1Speed = value;
             OnPropertyChanged(nameof(Fan1Speed));
             _events.Publish(new SettingChangedEvent("Fan1Speed", _fan1Speed ?? 20));
         }
@@ -40,7 +41,7 @@ public partial class DeviceSettingViewModel : ViewModelBase
         set
         {
             if (value == _fan2Speed) return;
-            _fan2Speed = value ?? 10;
+            _fan2Speed = value;
             OnPropertyChanged(nameof(Fan2Speed));
             _events.Publish(new SettingChangedEvent("Fan2Speed", _fan2Speed ?? 20));
         }
@@ -52,9 +53,33 @@ public partial class DeviceSettingViewModel : ViewModelBase
         set
         {
             if (value == _tecPower) return; 
-            _tecPower = value ?? 10;
+            _tecPower = value;
             OnPropertyChanged(nameof(TecPower));
             _events.Publish(new SettingChangedEvent("TecPower", _tecPower ?? 10));
+        }
+    }
+    private int? _mode = 1;
+    public int? Mode
+    {
+        get => _mode;
+        set
+        {
+            if (value == _mode) return;
+            _mode = value;
+            OnPropertyChanged(nameof(Mode));
+            _events.Publish(new SettingChangedEvent("Mode", _mode ?? 1));
+        }
+    }
+    private int? _modeIndex = 1;
+    public int? ModeIndex
+    {
+        get => _modeIndex;
+        set
+        {
+            if (value == _modeIndex) return;
+            _modeIndex = value;
+            OnPropertyChanged(nameof(ModeIndex));
+            _events.Publish(new SettingChangedEvent("ModeIndex", _modeIndex ?? 1));
         }
     }
 
@@ -64,10 +89,7 @@ public partial class DeviceSettingViewModel : ViewModelBase
         IEventHub events
     ):base(store, navigator, events)
     {
-
         if (_store.SelectedDevice?.deviceStatus == null) return;
-
-        DeviceStatus = _store.SelectedDevice.deviceStatus; 
 
         _subscriptions.Add(_events.Subscribe<DeviceStatusChangedEvent>( evt =>
         {
@@ -75,6 +97,11 @@ public partial class DeviceSettingViewModel : ViewModelBase
             Fan1Speed = _store.SelectedDevice.deviceStatus.Fan1Speed;
             Fan2Speed = _store.SelectedDevice.deviceStatus.Fan2Speed;
             TecPower = _store.SelectedDevice.deviceStatus.TecPower;
+            Mode = _store.SelectedDevice.deviceStatus.Mode;
+            ModeIndex = _store.SelectedDevice.deviceStatus.ModeIndex;
+            
+            if (NumberMode != _store.SelectedDevice.deviceStatus.NumberMode)
+                NumberMode = _store.SelectedDevice.deviceStatus.NumberMode;
         }));
     }
 }

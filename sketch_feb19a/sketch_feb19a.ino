@@ -15,7 +15,7 @@
 #define UPDATE_PERIOD 2000
 #define FUNCTION_PERIOD 10
 #define CONTROL_PERIOD 500
-#define RECONNECT_PERIOD 1000
+#define RECONNECT_PERIOD 10000
 #define NOTIFY_PERIOD 1000
 
 #define BUTTON1 9
@@ -30,6 +30,8 @@
 #define PWM_RESOLUTION 10
 #define DEBOUND_BUTTON 120 // 120ms debounce
 #define DEBOUND_INTERRUPT 100 // 100ms debounce
+
+#define NUMBER_MODES 6 // Number of modes
 
 char* ssid = "Devices";
 char* password = "0948844329";
@@ -67,8 +69,8 @@ volatile bool canSetInterrupt = true;
 static unsigned long buttonPress = 0;
 static unsigned long interruptPress = 0;
 
-volatile uint8_t mode[2] = {0};
-volatile uint8_t modeIndex = 0;
+volatile uint8_t mode[3] = {1, 1, 1};
+volatile uint8_t modeIndex = 1;
 
 void notifyClients() {
   telemetryJson["Fan1Speed"] = fan1Speed;
@@ -80,6 +82,7 @@ void notifyClients() {
   telemetryJson["ThermTemp"] = thermTemp;
   telemetryJson["Mode"] = mode[modeIndex];
   telemetryJson["ModeIndex"] = modeIndex;
+  telemetryJson["NumberMode"] = NUMBER_MODES;
 
   String jsonString;
   serializeJson(telemetryJson, jsonString);
@@ -108,6 +111,12 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
     }
     else if (message.startsWith("TecPower:")) {
       tecPower = message.substring(9).toInt();
+    }
+    else if (message.startsWith("Mode:")) {
+      mode[modeIndex] = message.substring(5).toInt();
+    }
+    else if (message.startsWith("ModeIndex:")) {
+      modeIndex = message.substring(10).toInt();
     }
     lastNotify = millis();
   }
@@ -234,10 +243,6 @@ void showError(int err) {
 void IRAM_ATTR button1ISR() {
   if (debounceInterrupt(BUTTON1, digitalRead(BUTTON1))) {
       switch (mode[modeIndex]) {
-      case 0: {
-        mode[modeIndex] = 1;
-        break;
-      }
       case 1: {
         mode[modeIndex] = 2;
         break;
@@ -255,7 +260,16 @@ void IRAM_ATTR button1ISR() {
         break;
       }
       case 5: {
-        mode[modeIndex] = 0;
+        mode[modeIndex] = 6;
+        break;
+      }
+      case 6: {
+        mode[modeIndex] = 1;
+        break;
+      }
+      default: {
+        modeIndex = 1;
+        mode[modeIndex] = 1;
         break;
       }
     }
@@ -265,7 +279,7 @@ void IRAM_ATTR button1ISR() {
 void IRAM_ATTR button2ISR() {
   if (debounceInterrupt(BUTTON2, digitalRead(BUTTON2))) {
       modeIndex++;
-      if (modeIndex > 1) modeIndex = 0;
+      if (modeIndex > 2) modeIndex = 1;
   } 
 }
 
@@ -299,6 +313,8 @@ void setup(void) {
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setCursor(4, 12);
   u8g2.print("Starting...");
+  u8g2.setCursor(4, 24);
+  u8g2.print(mode[modeIndex]);
   u8g2.sendBuffer();
 }
 
@@ -309,12 +325,12 @@ void loop(void) {
     functionTimer = now;
     
     switch (mode[modeIndex]) {
-      case 0: {
-        if (modeIndex == 0) {
+      case 1: {
+        if (modeIndex == 1) {
           showTemp();
         }
         
-        if (modeIndex == 1) {
+        if (modeIndex == 2) {
           u8g2.clearBuffer();
           u8g2.setFont(u8g2_font_6x10_tf);
           u8g2.setCursor(4, 16);
@@ -325,12 +341,12 @@ void loop(void) {
         break;
       }
 
-      case 1: {
-        if (modeIndex == 0) {
+      case 2: {
+        if (modeIndex == 1) {
           showTempInfo("Crt. Temp", 1, currentTemp, setTemp);
         }
 
-        if (modeIndex == 1) {
+        if (modeIndex == 2) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             setTemp+=0.5;
           } 
@@ -344,12 +360,12 @@ void loop(void) {
         break;
       }
 
-      case 2: {
-        if (modeIndex == 0) {
+      case 3: {
+        if (modeIndex == 1) {
           showPowerInfo("Crt. TEC Powr", 1, tecPower);
         }
 
-        if (modeIndex == 1) {
+        if (modeIndex == 2) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             tecPower++;
           } 
@@ -363,12 +379,12 @@ void loop(void) {
         break;
       }    
 
-      case 3: {
-        if (modeIndex == 0) {
+      case 4: {
+        if (modeIndex == 1) {
           showPowerInfo("Crt. Fan 1 Spd", 1, fan1Speed);
         }
 
-        if (modeIndex == 1) {
+        if (modeIndex == 2) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             fan1Speed++;
           } 
@@ -382,12 +398,12 @@ void loop(void) {
         break;
       }    
 
-      case 4: {
-        if (modeIndex == 0) {
+      case 5: {
+        if (modeIndex == 1) {
           showPowerInfo("Crt. Fan 2 Spd", 2, fan2Speed);
         }
 
-        if (modeIndex == 1) {
+        if (modeIndex == 2) {
           if (debounceButtons(BUTTON3, digitalRead(BUTTON3))) {
             fan2Speed++;
           } 
@@ -401,63 +417,74 @@ void loop(void) {
         break;
       }
 
-      case 5: {
-        if (modeIndex == 0) {
+      case 6: {
+        if (modeIndex == 1) {
           u8g2.clearBuffer();
 
           u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 8);
           u8g2.print("Connected to");
 
-          u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 18);
-          u8g2.print(WiFi.localIP());
+          u8g2.print(ssid);
 
-          u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 28);
           u8g2.print(status);
 
           u8g2.sendBuffer();
         }
 
-        if (modeIndex == 1) {
-          if (now - reconnectTimer >= RECONNECT_PERIOD) {
-            reconnectTimer = now;
-
-            if (!connected) {
-              WiFi.begin(ssid, password);
-              connected = !connected;
-            }
-            
-            if (WiFi.status() != WL_CONNECTED) {
+        if (modeIndex == 2) {
+          if (WiFi.status() != WL_CONNECTED) {
               u8g2.clearBuffer();
-              u8g2.setFont(u8g2_font_6x10_tf);
-              u8g2.setCursor(4, 16);
+              u8g2.setFont(u8g2_font_5x8_tf);
+              u8g2.setCursor(4, 8);
               u8g2.print("Connecting");
 
+              u8g2.setCursor(4, 18);
+              u8g2.print(ssid);
+
               u8g2.setFont(u8g2_font_6x10_tf);
-              u8g2.setCursor(4, 26);
+              u8g2.setCursor(4, 28);
               char dot = (count % 2 == 0) ? '/' : '\\';
               u8g2.print(dot);
-
               u8g2.sendBuffer();  
               count++;
               return;
               
-            } else {
+          } else {
               u8g2.clearBuffer();
-              u8g2.setFont(u8g2_font_6x10_tf);
-              u8g2.setCursor(4, 16);
-              u8g2.print("Connected");
+              u8g2.setFont(u8g2_font_5x8_tf);
+              u8g2.setCursor(4, 8);
+              u8g2.print("Address");
+
+              u8g2.setCursor(4, 18);
+              u8g2.print(WiFi.localIP());
+
               u8g2.setCursor(2, 28);
               u8g2.print(message);
               u8g2.sendBuffer();  
-            }
           }
         }
 
         break;
       }
+
+      default: {
+        modeIndex = 1;
+        mode[modeIndex] = 1;
+        break;
+      }
+    }
+  }
+
+  if (now - reconnectTimer >= RECONNECT_PERIOD) {
+    reconnectTimer = now;
+
+    if (!connected || WiFi.status() != WL_CONNECTED) {
+      WiFi.disconnect(true);
+      WiFi.begin(ssid, password);
+      connected = true;
     }
   }
 

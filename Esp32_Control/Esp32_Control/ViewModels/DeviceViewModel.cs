@@ -61,11 +61,23 @@ public partial class DeviceViewModel : ViewModelBase
                 _delayToken = new CancellationTokenSource();
 
                 var token = _delayToken.Token;
-                Task.Delay(100, token).ContinueWith(t =>
+                Task.Delay(50, token).ContinueWith(t =>
                 {
                     if (t.IsCanceled) return;
-                    if (_wsClient?.IsStarted == true)
-                        _wsClient.Send($"{evt.name}:{evt.value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                    if (_wsClient != null)
+                    {
+                        try
+                        {
+                            if (_wsClient.IsStarted)
+                            {
+                                _wsClient.Send($"{evt.name}:{evt.value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("WS send Error: " + ex.Message);
+                        }
+                    }
                 });
             }
         }));
@@ -138,6 +150,30 @@ public partial class DeviceViewModel : ViewModelBase
 
     private async Task BackAsync()
     {
+        if (_wsClient != null)
+        {
+            try
+            {
+                if (_wsClient.IsStarted)
+                {
+                    // Graceful disconnect with reason
+                    await _wsClient.Stop(
+                        System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, 
+                        "User disconnected");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error while stopping WebSocket: " + ex.Message);
+            }
+            finally
+            {
+                _wsClient.Dispose();
+                _wsClient = null;
+            }
+        }
+        _store.SelectedDevice?.Status = "User disconnected";
+        Status = null;
         _store.SelectedDevice = null;
         await _navigator.OpenPrevious();
     }

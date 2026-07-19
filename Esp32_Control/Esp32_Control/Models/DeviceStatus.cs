@@ -9,4 +9,6 @@ public class DeviceStatus
     public float ThermTemp { get; set; }
     public int Mode { get; set; }
     public int ModeIndex { get; set; }
+    public int NumberMode { get; set; }
+
 }
