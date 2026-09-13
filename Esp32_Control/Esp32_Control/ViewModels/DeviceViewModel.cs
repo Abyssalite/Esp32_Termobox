@@ -1,23 +1,20 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Avalonia_EventHub;
 using Avalonia_Navigation;
-using CommunityToolkit.Mvvm.Input;
 using Esp32_Control.Events;
 using Microsoft.Extensions.DependencyInjection;
 using Websocket.Client;
 
 namespace Esp32_Control.ViewModels;
 
-public partial class DeviceViewModel : ViewModelBase
+public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
 {    
     private CancellationTokenSource? _delayToken;
 
     private readonly ITabView _tabview;
     public ITabView TabView => _tabview;
-    public ICommand? BackCommand { get; }
     private WebsocketClient? _wsClient;
     
     public Device? SelectedDevice { get; }
@@ -43,7 +40,6 @@ public partial class DeviceViewModel : ViewModelBase
     {
         _tabview = tabs;
         SelectedDevice = _store.SelectedDevice;
-        BackCommand = new AsyncRelayCommand(BackAsync);
         if (SelectedDevice == null) return;
         
         Status = SelectedDevice.Status;
@@ -148,7 +144,7 @@ public partial class DeviceViewModel : ViewModelBase
         await _wsClient.Start();
     }
 
-    private async Task BackAsync()
+    private async Task ClearAsync()
     {
         if (_wsClient != null)
         {
@@ -175,6 +171,11 @@ public partial class DeviceViewModel : ViewModelBase
         _store.SelectedDevice?.Status = "User disconnected";
         Status = null;
         _store.SelectedDevice = null;
-        await _navigator.OpenPrevious();
+    }
+
+    async Task<bool> IHandleBackNavigation.HandleBackAsync()
+    {
+        await ClearAsync();
+        return await Task.FromResult(false);
     }
 }

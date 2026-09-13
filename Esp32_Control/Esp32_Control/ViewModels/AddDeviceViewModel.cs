@@ -6,12 +6,10 @@ using Avalonia_EventHub;
 
 namespace Esp32_Control.ViewModels;
 
-public partial class AddDeviceViewModel : ViewModelBase
+public partial class AddDeviceViewModel : ViewModelBase, IHandleBackNavigation
 {    
     public string? Address { get; set; }
     public string? Name { get; set; }
-
-    public ICommand? BackCommand { get; }
     public ICommand? AddDeviceCommand { get; }
 
     public AddDeviceViewModel(
@@ -20,7 +18,6 @@ public partial class AddDeviceViewModel : ViewModelBase
         IEventHub events
     ):base(store, navigator, events)
     {
-        BackCommand = new AsyncRelayCommand(ClearAsync);
         AddDeviceCommand = new AsyncRelayCommand(AddDevice);
     }
 
@@ -30,8 +27,6 @@ public partial class AddDeviceViewModel : ViewModelBase
         OnPropertyChanged(nameof(Name));
         Address = string.Empty;
         OnPropertyChanged(nameof(Address));
-
-        await _navigator.OpenPrevious();
     }
 
     private async Task AddDevice()
@@ -53,6 +48,12 @@ public partial class AddDeviceViewModel : ViewModelBase
         var result = await _store.StoreAddDevice(device);
         if (result) return;
         
+        await _navigator.OpenPrevious();
+    }
+
+    async Task<bool> IHandleBackNavigation.HandleBackAsync()
+    {
         await ClearAsync();
+        return await Task.FromResult(false);
     }
 }

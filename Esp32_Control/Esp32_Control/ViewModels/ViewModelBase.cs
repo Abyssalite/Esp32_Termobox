@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia_EventHub;
 using Avalonia_Navigation;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Esp32_Control.ViewModels;
 
@@ -12,6 +15,7 @@ public partial class ViewModelBase : ObservableObject
     protected readonly INavigatorService _navigator;
     protected readonly IEventHub _events;
     protected readonly List<IDisposable> _subscriptions = new();
+    public ICommand? BackCommand { get; }
 
     protected ViewModelBase(
         Store store,
@@ -22,5 +26,13 @@ public partial class ViewModelBase : ObservableObject
         _store = store;
         _navigator = navigator;
         _events = events;
+
+        BackCommand = new AsyncRelayCommand(BackAsync);
+    }
+
+    protected virtual async Task BackAsync()
+    {
+        await _navigator.OpenPrevious();
+        await Task.CompletedTask;
     }
 }
