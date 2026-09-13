@@ -31,8 +31,8 @@
 #define DEBOUND_BUTTON 120 // 120ms debounce
 #define DEBOUND_INTERRUPT 100 // 100ms debounce
 
-char* ssid = "Devices";
-char* password = "0948844329";
+char* ssid = "";
+char* password = "";
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
@@ -175,13 +175,11 @@ void showTemp() {
   u8g2.setFont(u8g2_font_5x8_tf);
   u8g2.setCursor(4, 8);
   u8g2.print("Co, Ho / Hum");
-
   u8g2.setFont(u8g2_font_7x14_tf);
   u8g2.setCursor(4, 22);
   u8g2.print(currentTemp, 1);
   u8g2.print(",");
   u8g2.print(thermTemp, 1);
-
   u8g2.setCursor(4, 38);
   u8g2.print(currentHumidity, 1);
   u8g2.print(" %RH");
@@ -196,7 +194,6 @@ void showTempInfo(std::string text, uint8_t num, float data, float data2 = 0) {
     u8g2.print(text.c_str());   
     u8g2.print(' ');
     u8g2.print(num);
-
     u8g2.setFont(u8g2_font_7x14_tf);
     u8g2.setCursor(4, 22);
     u8g2.print(data, 1);
@@ -214,7 +211,6 @@ void showPowerInfo(std::string text, uint8_t num, uint8_t data) {
     u8g2.print(text.c_str());   
     u8g2.print(' ');
     u8g2.print(num);
-
     u8g2.setFont(u8g2_font_7x14_tf);
     u8g2.setCursor(4, 22);
     u8g2.print(data);
@@ -294,12 +290,6 @@ void setup(void) {
 
   u8g2.begin();
   u8g2.enableUTF8Print();
-
-  u8g2.clearBuffer();
-  u8g2.setFont(u8g2_font_6x10_tf);
-  u8g2.setCursor(4, 12);
-  u8g2.print("Starting...");
-  u8g2.sendBuffer();
 }
 
 void loop(void) {
@@ -307,7 +297,6 @@ void loop(void) {
 
   if (now - functionTimer >= FUNCTION_PERIOD) {
     functionTimer = now;
-    
     switch (mode[modeIndex]) {
       case 0: {
         if (modeIndex == 0) {
@@ -404,19 +393,13 @@ void loop(void) {
       case 5: {
         if (modeIndex == 0) {
           u8g2.clearBuffer();
-
           u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 8);
           u8g2.print("Connected to");
-
-          u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 18);
           u8g2.print(WiFi.localIP());
-
-          u8g2.setFont(u8g2_font_5x8_tf);
           u8g2.setCursor(4, 28);
           u8g2.print(status);
-
           u8g2.sendBuffer();
         }
 
@@ -434,12 +417,10 @@ void loop(void) {
               u8g2.setFont(u8g2_font_6x10_tf);
               u8g2.setCursor(4, 16);
               u8g2.print("Connecting");
-
-              u8g2.setFont(u8g2_font_6x10_tf);
               u8g2.setCursor(4, 26);
+              
               char dot = (count % 2 == 0) ? '/' : '\\';
               u8g2.print(dot);
-
               u8g2.sendBuffer();  
               count++;
               return;
@@ -463,7 +444,6 @@ void loop(void) {
 
   if (now - updateTimer >= UPDATE_PERIOD) {
     updateTimer = now;
-
     if (dht22.available()) {
       int16_t tmp = dht22.readTemperature();
       if (tmp == ~0) 
@@ -485,7 +465,6 @@ void loop(void) {
 
   if (now - controlTimer >= CONTROL_PERIOD) {
     controlTimer = now;
-
     readThermisor();
     //tecPowerController();
     setPower(FAN1, &fan1Speed);
@@ -494,8 +473,8 @@ void loop(void) {
   }
 
   if (now - lastNotify >= NOTIFY_PERIOD) {
-    notifyClients();
     lastNotify = now;
+    notifyClients();
   }
 
   ws.cleanupClients();
