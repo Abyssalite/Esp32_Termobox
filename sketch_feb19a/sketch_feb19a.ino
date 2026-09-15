@@ -6,6 +6,8 @@
 #include <AsyncTCP.h>
 #include <ArduinoJson.h>
 
+#include "env.h"
+
 #define TR0 10000   // Ω
 #define R   10000
 #define B   3970  
@@ -80,7 +82,7 @@ void notifyClients() {
   telemetryJson["ThermTemp"] = thermTemp;
   telemetryJson["Mode"] = mode[modeIndex];
   telemetryJson["ModeIndex"] = modeIndex;
-  telemetryJson["NumberMode"] = NUMBER_MODES;
+  telemetryJson["NumberMode"] = 6;
 
   String jsonString;
   serializeJson(telemetryJson, jsonString);
@@ -278,7 +280,7 @@ void IRAM_ATTR button2ISR() {
 }
 
 void setup(void) {
-  //Serial.begin(9600);
+  Serial.begin(9600);
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
   pinMode(BUTTON3, INPUT_PULLUP);
@@ -460,7 +462,7 @@ void loop(void) {
 
     if (!connected || WiFi.status() != WL_CONNECTED) {
       WiFi.disconnect(true);
-      WiFi.begin(ssid, password);
+      WiFi.begin(SSID, PASSWORD);
       connected = true;
     }
   }

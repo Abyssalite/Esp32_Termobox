@@ -1,11 +1,9 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia_EventHub;
 using Avalonia_Navigation;
 using Esp32_Control.Events;
 using Microsoft.Extensions.DependencyInjection;
-using Websocket.Client;
 
 namespace Esp32_Control.ViewModels;
 
@@ -15,35 +13,27 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
 
     private readonly ITabView _tabview;
     public ITabView TabView => _tabview;
-    private WebsocketClient? _wsClient;
-    
-    public Device? SelectedDevice { get; }
-    private string? _status;
-    public string? Status
-    {
-        get => _status;
-        set
-        {
-            _status = value;
+    private readonly IDeviceConnectionService _connection;
 
-            SelectedDevice?.Status = _status;
-            OnPropertyChanged(nameof(Status));
-        }
-    }
+    public Device? SelectedDevice { get; }
+    public string? Status { set; get; }
 
     public DeviceViewModel(
         Store store,
         INavigatorService navigator,
         IEventHub events,
-        ITabView tabs
+        ITabView tabs,
+        IDeviceConnectionService connection
     ):base(store, navigator, events)
-    {
+    {        
+        _connection = connection;
         _tabview = tabs;
         SelectedDevice = _store.SelectedDevice;
         if (SelectedDevice == null) return;
         
-        Status = SelectedDevice.Status;
-              
+        _connection.StatusReceived += OnStatusReceived;
+        _connection.ConnectionStatusChanged += (_,status)=> { Status=status; };
+
         _subscriptions.Add(_events.Subscribe<TabChangedEvent>(async evt =>
         {
             await _tabview.switchMainTab(evt.index);
@@ -57,23 +47,11 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
                 _delayToken = new CancellationTokenSource();
 
                 var token = _delayToken.Token;
-                Task.Delay(50, token).ContinueWith(t =>
+                Task.Delay(50, token).ContinueWith(async t =>
                 {
                     if (t.IsCanceled) return;
-                    if (_wsClient != null)
-                    {
-                        try
-                        {
-                            if (_wsClient.IsStarted)
-                            {
-                                _wsClient.Send($"{evt.name}:{evt.value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("WS send Error: " + ex.Message);
-                        }
-                    }
+
+                    await SendSetting(evt.name, evt.value);
                 });
             }
         }));
@@ -92,7 +70,7 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
         }));
 
         _ = InitializeAsync();
-        _ = ConnectAsync(SelectedDevice);
+        _ = ConnectAsync();
     }
 
     public async Task InitializeAsync()
@@ -109,68 +87,29 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
         await _tabview.switchSecondaryTab(3);
     }
 
-    public async Task ConnectAsync(Device device)
+    private async Task ConnectAsync()
     {
-        var url = new Uri($"ws://{device.Address}/ws");
+        if (SelectedDevice == null)
+            return;
+        await _connection.ConnectAsync(SelectedDevice);
+    }
 
-        _wsClient = new WebsocketClient(url)
-        {
-            ReconnectTimeout = TimeSpan.FromSeconds(10),
-            ErrorReconnectTimeout = TimeSpan.FromSeconds(10)
-        };
+    private void OnStatusReceived(object? sender, DeviceStatus status)
+    {
+        _store.StoreUpdateDeviceStatus(status);
+    }
 
-        _wsClient.MessageReceived.Subscribe(msg =>
-        {
-            try
-            {
-                var status = System.Text.Json.JsonSerializer.Deserialize<DeviceStatus>(msg.Text ?? "");
-
-                if (status != null)
-                {
-                    _store.StoreUpdateDeviceStatus(status); 
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("JSON Parse Error: " + ex.Message);
-            }
-        });
-
-        _wsClient.ReconnectionHappened.Subscribe(info =>
-        {
-            Status = $"Status: {info.Type}";
-        });
-
-        await _wsClient.Start();
+    public async Task SendSetting(string name, float value)
+    {
+        _connection.Send($"{name}:{value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
     }
 
     private async Task ClearAsync()
     {
-        if (_wsClient != null)
-        {
-            try
-            {
-                if (_wsClient.IsStarted)
-                {
-                    // Graceful disconnect with reason
-                    await _wsClient.Stop(
-                        System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, 
-                        "User disconnected");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error while stopping WebSocket: " + ex.Message);
-            }
-            finally
-            {
-                _wsClient.Dispose();
-                _wsClient = null;
-            }
-        }
-        _store.SelectedDevice?.Status = "User disconnected";
-        Status = null;
+        await _connection.DisconnectAsync();
+
         _store.SelectedDevice = null;
+        Status = null;
     }
 
     async Task<bool> IHandleBackNavigation.HandleBackAsync()

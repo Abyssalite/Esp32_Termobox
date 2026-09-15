@@ -2,7 +2,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Layout;
 using Avalonia.Threading;
 
 namespace Esp32_Control.Views;
@@ -10,6 +9,7 @@ namespace Esp32_Control.Views;
 public partial class AddDeviceView : UserControl
 {
     private CancellationTokenSource? _resizeToken;
+    private bool _layoutInitialized = false;
 
     public AddDeviceView()
     {
@@ -58,6 +58,12 @@ public partial class AddDeviceView : UserControl
             DeviceAddStack.ColumnDefinitions = new ColumnDefinitions("*,Auto");
             Grid.SetRow(DeviceAddListButton, 0);
             Grid.SetColumn(DeviceAddListButton, 1);
+        }
+
+        if (!_layoutInitialized)
+        {
+            DeviceAddStack.IsVisible = true;
+            _layoutInitialized = true;
         }
     }
 }

@@ -9,6 +9,7 @@ namespace Esp32_Control.Views;
 public partial class SelectView : UserControl
 {
     private CancellationTokenSource? _resizeToken;
+    private bool _layoutInitialized = false;
 
     public SelectView()
     {
@@ -59,6 +60,13 @@ public partial class SelectView : UserControl
             DeviceSelectStack.ColumnDefinitions = new ColumnDefinitions("*,Auto");
             Grid.SetRow(DeviceSelectListButton, 0);
             Grid.SetColumn(DeviceSelectListButton, 1);
+        }
+
+
+        if (!_layoutInitialized)
+        {
+            DeviceSelectStack.IsVisible = true;
+            _layoutInitialized = true;
         }
     }
 }

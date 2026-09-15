@@ -50,7 +50,12 @@
             </Grid>   
         </Border>
 
-        <Grid x:Name="DeviceStatusGrid" Grid.Row="1" HorizontalAlignment="Stretch" RowDefinitions="*,Auto">
+        <Grid x:Name="DeviceStatusGrid" 
+            Grid.Row="1" 
+            HorizontalAlignment="Stretch" 
+            RowDefinitions="*,Auto"
+            IsVisible="False">	
+            
           	<ContentControl x:Name="DeviceStatusContent" Content="{Binding TabView.MainTab}" />
           	<ContentControl x:Name="DeviceSettingContent" Content="{Binding TabView.SecondaryTab}" />
         </Grid>

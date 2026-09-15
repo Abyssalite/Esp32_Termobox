@@ -13,6 +13,7 @@ public partial class DeviceView : UserControl
 {
     private CancellationTokenSource? _resizeToken;
     private readonly IEventHub? _events;
+    private bool _layoutInitialized = false;
 
     public DeviceView()
     {
@@ -64,6 +65,12 @@ public partial class DeviceView : UserControl
             Grid.SetRow(DeviceSettingContent, 0);
             Grid.SetColumn(DeviceSettingContent, 1);
             _events.Publish(new LayoutChangedEvent(2));
+        }
+
+        if (!_layoutInitialized)
+        {
+            DeviceStatusGrid.IsVisible = true;
+            _layoutInitialized = true;
         }
     }
 }

@@ -31,7 +31,8 @@
             <Grid x:Name="DeviceAddStack" 
                 Grid.Column="1" 
 				HorizontalAlignment="Stretch" 
-                VerticalAlignment="Center">	
+                VerticalAlignment="Center"
+                IsVisible="False">	
 
                 <StackPanel x:Name="DeviceAddTextStack" HorizontalAlignment="Stretch">
                     <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />

@@ -10,7 +10,8 @@
 		<Grid x:Name="DeviceSelectStack" 
 			HorizontalAlignment="Center"
 			VerticalAlignment="Center" 
-			Margin="20 100">
+			Margin="20 100"
+            IsVisible="False">	
                 <ListBox x:Name="DeviceSelectListBox"
 					ItemsSource="{Binding DevicesList}"
 					HorizontalAlignment="Stretch" 

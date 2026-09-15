@@ -6,7 +6,8 @@ public static class ServiceCollectionExtensions
     public static void AddCommonServices(this IServiceCollection collection)
     {
         collection.AddSingleton<Store>();
-        
+        collection.AddSingleton<IDeviceConnectionService, DeviceConnectionService>();
+
         collection.AddTransient<MainViewModel>();
         collection.AddTransient<SelectViewModel>();
         collection.AddTransient<AddDeviceViewModel>();
