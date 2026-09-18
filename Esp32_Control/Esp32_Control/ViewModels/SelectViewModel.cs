@@ -51,7 +51,7 @@ public partial class SelectViewModel : ViewModelBase
 
     private async Task OpenDeviceAsync(Device device)
     {
-        _store.SelectedDevice = device;
+        _store.SelectDevice(device);
 
         var vm = App.Services?.GetRequiredService<DeviceViewModel>();
         await _navigator.NavigateMain(vm);     

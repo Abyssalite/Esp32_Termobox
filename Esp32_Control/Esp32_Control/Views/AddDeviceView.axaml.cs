@@ -36,7 +36,7 @@ public partial class AddDeviceView : UserControl
 
         var width = topLevel.Bounds.Width;
 
-        if (width < 800)
+        if (width <= 800)
         {
             DeviceAddBorder.Margin = new Thickness(20, 50, 20, 50);
             DeviceAddTextStack.Margin = new Thickness(0, 0, 0, 20);

@@ -31,9 +31,14 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
         SelectedDevice = _store.SelectedDevice;
         if (SelectedDevice == null) return;
         
-        _connection.StatusReceived += OnStatusReceived;
-        _connection.ConnectionStatusChanged += (_,status)=> { Status=status; };
-
+        _subscriptions.Add(_events.Subscribe<StatusReceivedEvent>(async evt =>
+        {
+            _store.StoreUpdateDeviceStatus(evt.deviceStatus);
+        }));
+        _subscriptions.Add(_events.Subscribe<ConnectionStatusChangedEvent>(async evt =>
+        {
+            Status = evt.connectionStatus;
+        }));
         _subscriptions.Add(_events.Subscribe<TabChangedEvent>(async evt =>
         {
             await _tabview.switchMainTab(evt.index);
@@ -91,12 +96,7 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
     {
         if (SelectedDevice == null)
             return;
-        await _connection.ConnectAsync(SelectedDevice);
-    }
-
-    private void OnStatusReceived(object? sender, DeviceStatus status)
-    {
-        _store.StoreUpdateDeviceStatus(status);
+        await _connection.ConnectAsync(SelectedDevice, _events);
     }
 
     public async Task SendSetting(string name, float value)
@@ -108,7 +108,7 @@ public partial class DeviceViewModel : ViewModelBase, IHandleBackNavigation
     {
         await _connection.DisconnectAsync();
 
-        _store.SelectedDevice = null;
+        _store.SelectDevice(null);
         Status = null;
     }
 

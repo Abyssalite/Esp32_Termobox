@@ -2,6 +2,8 @@ using System;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Avalonia_EventHub;
+using Esp32_Control.Events;
 using Websocket.Client;
 
 public class DeviceConnectionService : IDeviceConnectionService
@@ -10,11 +12,7 @@ public class DeviceConnectionService : IDeviceConnectionService
 
     public bool IsConnected => _wsClient?.IsStarted ?? false;
 
-
-    public event EventHandler<DeviceStatus>? StatusReceived;
-    public event EventHandler<string>? ConnectionStatusChanged;
-
-    public async Task ConnectAsync(Device device)
+    public async Task ConnectAsync(Device device, IEventHub _events)
     {
         await DisconnectAsync();
 
@@ -34,7 +32,7 @@ public class DeviceConnectionService : IDeviceConnectionService
 
                 if (status != null)
                 {
-                    StatusReceived?.Invoke(this, status);
+                    _events.Publish(new StatusReceivedEvent(status));
                 }
             }
             catch(Exception ex)
@@ -45,9 +43,7 @@ public class DeviceConnectionService : IDeviceConnectionService
 
         _wsClient.ReconnectionHappened.Subscribe(info =>
         {
-            ConnectionStatusChanged?.Invoke(
-                this,
-                $"Status: {info.Type}");
+            _events.Publish(new ConnectionStatusChangedEvent($"Status: {info.Type}"));
         });
 
         await _wsClient.Start();

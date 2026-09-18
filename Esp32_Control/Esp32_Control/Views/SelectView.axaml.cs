@@ -36,7 +36,7 @@ public partial class SelectView : UserControl
 
         var width = topLevel.Bounds.Width;
 
-        if (width < 800)
+        if (width <= 800)
         {
             DeviceSelectBorder.Margin = new Thickness(20, 50, 20, 50);
             DeviceSelectListBox.Margin = new Thickness(0, 0, 0, 8);

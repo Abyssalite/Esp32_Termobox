@@ -43,7 +43,7 @@ public partial class DeviceView : UserControl
 
         var width = topLevel.Bounds.Width;
 
-        if (width < 800)
+        if (width <= 800)
         {
             DeviceStatusContent.Margin = new Thickness(60, 0, 60, 0);
             DeviceSettingContent.Margin = new Thickness(0, 0, 0, 0);
