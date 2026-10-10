@@ -35,11 +35,11 @@ public class Store
     public async Task<bool> StoreAddDevice(Device device)
     {
         var deviceName = DevicesList.FirstOrDefault(d => d.Name == device.Name);
-        if (deviceName != null) return true;
+        if (deviceName != null) return false;
 
         DevicesList.Add(device);
 
         await Helpers.SaveAsync(this);
-        return false;
+        return true;
     }
 }
