@@ -2,7 +2,7 @@ using System;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Avalonia_EventHub;
+using Custom_EventHub;
 using Esp32_Control.Events;
 using Websocket.Client;
 

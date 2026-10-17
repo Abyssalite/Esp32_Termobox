@@ -1,8 +1,8 @@
 
 using System;
 using System.Windows.Input;
-using Avalonia_EventHub;
-using Avalonia_Navigation;
+using Custom_EventHub;
+using Custom_Navigation;
 using CommunityToolkit.Mvvm.Input;
 using Esp32_Control.Events;
 

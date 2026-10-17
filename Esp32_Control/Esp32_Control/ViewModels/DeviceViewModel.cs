@@ -1,7 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Avalonia_EventHub;
-using Avalonia_Navigation;
+using Custom_EventHub;
+using Custom_Navigation;
+using Custom_Tab;
 using Esp32_Control.Events;
 using Microsoft.Extensions.DependencyInjection;
 

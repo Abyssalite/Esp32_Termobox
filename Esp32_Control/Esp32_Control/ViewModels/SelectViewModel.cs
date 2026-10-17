@@ -2,8 +2,8 @@
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia_Navigation;
-using Avalonia_EventHub;
+using Custom_Navigation;
+using Custom_EventHub;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 

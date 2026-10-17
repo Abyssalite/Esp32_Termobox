@@ -1,26 +1,19 @@
 ﻿using Android.App;
 using Android.Content.PM;
-using Avalonia;
 using Avalonia.Android;
 using Microsoft.Extensions.DependencyInjection;
-using Avalonia_Navigation;
+using Custom_Navigation;
 
 namespace Esp32_Control.Android;
 
 [Activity(
-    Label = "Esp32_Control.Android",
+    Label = "Esp32 Control",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,
     ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
-public class MainActivity : AvaloniaMainActivity<App>
+public class MainActivity : AvaloniaMainActivity
 {
-    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-    {
-        return base.CustomizeAppBuilder(builder)
-            .WithInterFont();
-    }
-
     public override void OnBackPressed()
     {
         var navigatorService = App.Services?.GetRequiredService<INavigatorService>();

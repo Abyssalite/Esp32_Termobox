@@ -1,8 +1,8 @@
-﻿using Avalonia_Navigation;
+﻿using Custom_Navigation;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using System.Threading.Tasks;
-using Avalonia_EventHub;
+using Custom_EventHub;
 
 namespace Esp32_Control.ViewModels;
 

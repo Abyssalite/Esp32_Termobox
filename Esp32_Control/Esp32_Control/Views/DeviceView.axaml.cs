@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Avalonia_EventHub;
+using Custom_EventHub;
 using Esp32_Control.Events;
 using Microsoft.Extensions.DependencyInjection;
 

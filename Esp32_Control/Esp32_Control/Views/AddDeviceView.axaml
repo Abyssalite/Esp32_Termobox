@@ -34,8 +34,8 @@
                 VerticalAlignment="Center">	
 
                 <StackPanel x:Name="DeviceAddTextStack" HorizontalAlignment="Stretch">
-                    <TextBox Watermark="Device name" Text="{Binding Name}" Margin="8" />
-                    <TextBox Watermark="IP address" Text="{Binding Address}" Margin="8" />
+                    <TextBox PlaceholderText="Device name" Text="{Binding Name}" Margin="8" />
+                    <TextBox PlaceholderText="IP address" Text="{Binding Address}" Margin="8" />
                 </StackPanel>
 
                 <Button x:Name="DeviceAddListButton"

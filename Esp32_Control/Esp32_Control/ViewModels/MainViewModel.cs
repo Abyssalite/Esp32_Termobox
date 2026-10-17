@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
-using Avalonia_EventHub;
-using Avalonia_Navigation;
+using Custom_EventHub;
+using Custom_Navigation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Esp32_Control.ViewModels;

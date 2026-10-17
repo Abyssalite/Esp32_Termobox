@@ -17,7 +17,6 @@ public partial class MainView : UserControl
             if (insetsManager is not null)
             {
                 insetsManager.SystemBarColor = Colors.Black;
-                insetsManager.DisplayEdgeToEdge = true;
             }
         };
     }
